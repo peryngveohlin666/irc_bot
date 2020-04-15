@@ -2,6 +2,7 @@ import java.io.*;
 import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -119,6 +120,11 @@ public class Bot {
     }
 
     public void Respond(String incoming, String channel, String raw) throws IOException {
+        DateFormat df = new SimpleDateFormat("yyyyMMdd");
+        String info;
+        String today;
+        String date;
+        int coins, relationship;
         switch (incoming) {
             case " help":
                 SendToChannel(channel, "Type in stallman to get the lyrics for the free software song, Type in roll to get a random number between 0 and 100, beer to buy a pint!");
@@ -150,21 +156,47 @@ public class Bot {
                 SendToChannel(channel, Integer.toString(roll));
                 break;
             case " beer":
+                info = readFromFile(getSendingUser(raw));
+                today = df.format(Calendar.getInstance().getTime());
+                if(info.equals("")){
+                    writeToFile(getSendingUser(raw), "100;0;" + today);
+                }
                 SendToChannel(channel, getSendingUser(raw) + " Baught a pint! It cost you 10 coins!");
-                int coins = Integer.parseInt(readFromFile(getSendingUser(raw)).split(";")[0]);
-                int relationship = Integer.parseInt(readFromFile(getSendingUser(raw)).split(";")[1]);
-                String date = (readFromFile(getSendingUser(raw)).split(";")[2]);
+                coins = Integer.parseInt(readFromFile(getSendingUser(raw)).split(";")[0]);
+                relationship = Integer.parseInt(readFromFile(getSendingUser(raw)).split(";")[1]);
+                date = (readFromFile(getSendingUser(raw)).split(";")[2]);
                 coins = coins - 10;
                 relationship = relationship + 10;
                 writeToFile(getSendingUser(raw), coins + ";" + relationship + ";" + date);
                 break;
             case " coins":
-                String info = readFromFile(getSendingUser(raw));
-                Date today = Calendar.getInstance().getTime();
+                info = readFromFile(getSendingUser(raw));
+                today = df.format(Calendar.getInstance().getTime());
                 if(info.equals("")){
                     writeToFile(getSendingUser(raw), "100;0;" + today);
                 }
                 SendToChannel(channel, "You have: " + readFromFile(getSendingUser(raw)).split(";")[0] + " coins.");
+                break;
+            case " daily":
+                info = readFromFile(getSendingUser(raw));
+                today = df.format(Calendar.getInstance().getTime()).split(" ")[0];
+                if(info.equals("")){
+                    writeToFile(getSendingUser(raw), "100;0;" + today);
+                }
+                coins = Integer.parseInt(readFromFile(getSendingUser(raw)).split(";")[0]);
+                relationship = Integer.parseInt(readFromFile(getSendingUser(raw)).split(";")[1]);
+                date = (readFromFile(getSendingUser(raw)).split(";")[2].split("\n")[0]);
+                System.out.println(date);
+                System.out.println(today);
+               if (!date.equals(today)){
+                SendToChannel(channel, getSendingUser(raw) + " Collected their daily coins of 100!");
+                coins = coins + 100;
+                relationship = relationship + 1;
+                writeToFile(getSendingUser(raw), coins + ";" + relationship + ";" + today);
+                }
+                else{
+                    SendToChannel(channel, getSendingUser(raw) + " You can't collect any more coins today");
+                }
                 break;
             default:
                 SendToChannel(channel, "Type help to get a hold of what I am capable of! Also join #cyberia");
