@@ -1,12 +1,9 @@
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.Socket;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Random;
-import java.util.Scanner;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 public class Bot {
     PrintWriter output;
@@ -23,21 +20,21 @@ public class Bot {
         this.host = host;
 
         SendMessage("NICK " + nickname);
-        SendMessage("User "+ nickname +" 0 * : " + nickname);
-        for(int i = 0; i < this.rooms.size(); i++) {
+        SendMessage("User " + nickname + " 0 * : " + nickname);
+        for (int i = 0; i < this.rooms.size(); i++) {
             SendMessage("JOIN " + this.rooms.get(i));
         }
-        while(input.hasNext()){
+        while (input.hasNext()) {
             onMessageReceived(input.nextLine());
         }
     }
 
-    public void SendMessage(String message){
+    public void SendMessage(String message) {
         output.print(message + "\n");
         output.flush();
     }
 
-    public void SendToChannel(String channel, String message){
+    public void SendToChannel(String channel, String message) {
         SendMessage("PRIVMSG " + channel + " :" + message);
     }
 
@@ -50,12 +47,19 @@ public class Bot {
     public void onMessageReceived(String message) throws IOException {
 
         if (message.startsWith("PING")) {
-                Pong(message);
+            Pong(message);
+        }
+
+        if (message.split(":")[1].contains("353")) {
+            String users[] = getUserList(message);
+            for (int i = 0; i < users.length; i++) {
+                CreateAFile(users[i]);
+            }
         }
 
 
-        if(CleanMessage(message).startsWith(this.nickname)){
-           Respond(CleanMessage(message.replace(nickname, "")), getSendingLocation(message), message);
+        if (CleanMessage(message).startsWith(this.nickname)) {
+            Respond(CleanMessage(message.replace(nickname, "")), getSendingLocation(message), message);
         }
 
         LogMessages(getSendingUser(message) + ": " + CleanMessage(message) + " (In " + getSendingLocation(message) + ")");
@@ -64,11 +68,11 @@ public class Bot {
 
     }
 
-    public String CleanMessage(String message){
+    public String CleanMessage(String message) {
         String[] out = message.split(":");
         String rt = "";
         if (out.length >= 3) {
-            for (int i=2; i < out.length; i++){
+            for (int i = 2; i < out.length; i++) {
                 rt = rt + "" + out[i];
             }
         }
@@ -83,8 +87,39 @@ public class Bot {
         writer.close();
     }
 
-    public void Respond(String incoming, String channel, String raw){
-        switch(incoming) {
+    public void CreateAFile(String name) throws IOException {
+        File file = new File(name);
+        FileWriter writer = new FileWriter(name, true);
+        writer.close();
+    }
+
+    public void writeToFile(String name, String text) throws IOException {
+        File file = new File(name);
+        List<String> lines = Files.readAllLines(file.toPath());
+        FileWriter writer = new FileWriter(name);
+        writer.write(text);
+        writer.write("\n");
+        writer.close();
+    }
+
+    public String readFromFile(String name) throws IOException {
+        FileReader fr = new FileReader(name);
+        int i = 0;
+        String contents = "";
+        while ((i = fr.read()) != -1) {
+            contents = contents + (char) i;
+        }
+        return contents;
+    }
+
+    public String[] getUserList(String message) {
+        String users[] = message.split(":")[2].split(" ");
+        System.out.println(users);
+        return users;
+    }
+
+    public void Respond(String incoming, String channel, String raw) throws IOException {
+        switch (incoming) {
             case " help":
                 SendToChannel(channel, "Type in stallman to get the lyrics for the free software song, Type in roll to get a random number between 0 and 100, beer to buy a pint!");
                 break;
@@ -115,26 +150,39 @@ public class Bot {
                 SendToChannel(channel, Integer.toString(roll));
                 break;
             case " beer":
-                SendToChannel(channel, getSendingUser(raw) + " Baught a pint!");
+                SendToChannel(channel, getSendingUser(raw) + " Baught a pint! It cost you 10 coins!");
+                int coins = Integer.parseInt(readFromFile(getSendingUser(raw)).split(";")[0]);
+                int relationship = Integer.parseInt(readFromFile(getSendingUser(raw)).split(";")[1]);
+                String date = (readFromFile(getSendingUser(raw)).split(";")[2]);
+                coins = coins - 10;
+                relationship = relationship + 10;
+                writeToFile(getSendingUser(raw), coins + ";" + relationship + ";" + date);
                 break;
-            default :
+            case " coins":
+                String info = readFromFile(getSendingUser(raw));
+                Date today = Calendar.getInstance().getTime();
+                if(info.equals("")){
+                    writeToFile(getSendingUser(raw), "100;0;" + today);
+                }
+                SendToChannel(channel, "You have: " + readFromFile(getSendingUser(raw)).split(";")[0] + " coins.");
+                break;
+            default:
                 SendToChannel(channel, "Type help to get a hold of what I am capable of! Also join #cyberia");
         }
     }
 
-    public String getSendingLocation(String message){
+    public String getSendingLocation(String message) {
         String room = "";
-        if(message.split("PRIVMSG").length>=2 && message.split(":")[1].split("#").length >=2){
+        if (message.split("PRIVMSG").length >= 2 && message.split(":")[1].split("#").length >= 2) {
             room = message.split(":")[1].split("PRIVMSG ")[1];
-        }
-        else if (message.split("PRIVMSG ").length == 2) {
+        } else if (message.split("PRIVMSG ").length == 2) {
             room = getSendingUser(message);
         }
         return room;
     }
 
-    public String getSendingUser(String message){
-        String user =  message.split(":")[1].split("!")[0];
+    public String getSendingUser(String message) {
+        String user = message.split(":")[1].split("!")[0];
         return user;
     }
 
