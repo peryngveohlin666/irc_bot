@@ -1,7 +1,6 @@
 import java.io.*;
 import java.net.Socket;
 import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -127,7 +126,7 @@ public class Bot {
         int coins, relationship;
         switch (incoming) {
             case " help":
-                SendToChannel(channel, "Type in stallman to get the lyrics for the free software song, Type in roll to get a random number between 0 and 100, beer to buy a pint!");
+                SendToChannel(channel, "Type in stallman to get the lyrics for the free software song, Type in roll to get a random number between 0 and 100, beer to buy a pint! (this will cost you 10 coins), type daily to collect you daily coins, type coins to check the amount of coins you have");
                 break;
             case " mert":
                 SendToChannel(channel, "cutie");
@@ -153,7 +152,7 @@ public class Bot {
             case " roll":
                 Random rand = new Random();
                 int roll = rand.nextInt(101);
-                SendToChannel(channel, Integer.toString(roll));
+                SendToChannel(channel,getSendingUser(raw) + " rolled " + Integer.toString(roll) + ".");
                 break;
             case " beer":
                 info = readFromFile(getSendingUser(raw));
