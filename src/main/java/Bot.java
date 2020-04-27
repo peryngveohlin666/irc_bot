@@ -192,7 +192,7 @@ public class Bot {
                 writeToFile(getSendingUser(raw), coins + ";" + relationship + ";" + today);
                 }
                 else{
-                    SendToChannel(channel, getSendingUser(raw) + " You can't collect any more coins today (If you registered today you already got your daily coins)");
+                    SendToChannel(channel, getSendingUser(raw) + " You can't collect any more coins today (- If you registered today you already got your daily coins :< -)");
                 }
                 break;
             case " kiss":
