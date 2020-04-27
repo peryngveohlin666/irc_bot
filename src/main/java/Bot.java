@@ -126,7 +126,7 @@ public class Bot {
         int coins, relationship;
         switch (incoming) {
             case " help":
-                SendToChannel(channel, "Type in stallman to get the lyrics for the free software song, Type in roll to get a random number between 0 and 100, beer to buy a pint! (this will cost you 10 coins), type daily to collect you daily coins, type coins to check the amount of coins you have");
+                SendToChannel(channel, "Type in stallman to get the lyrics for the free software song, Type in roll to get a random number between 0 and 100, beer to buy a pint! (this will cost you 10 coins), type daily to collect you daily coins, type coins to check the amount of coins you have, type kiss to try getting a kiss");
                 break;
             case " mert":
                 SendToChannel(channel, "cutie");
@@ -185,8 +185,6 @@ public class Bot {
                 coins = Integer.parseInt(readFromFile(getSendingUser(raw)).split(";")[0]);
                 relationship = Integer.parseInt(readFromFile(getSendingUser(raw)).split(";")[1]);
                 date = (readFromFile(getSendingUser(raw)).split(";")[2].split("\n")[0]);
-                System.out.println(date);
-                System.out.println(today);
                if (!date.equals(today)){
                 SendToChannel(channel, getSendingUser(raw) + " Collected their daily coins of 100!");
                 coins = coins + 100;
@@ -194,9 +192,26 @@ public class Bot {
                 writeToFile(getSendingUser(raw), coins + ";" + relationship + ";" + today);
                 }
                 else{
-                    SendToChannel(channel, getSendingUser(raw) + " You can't collect any more coins today");
+                    SendToChannel(channel, getSendingUser(raw) + " You can't collect any more coins today (If you registered today you already got your daily coins)");
                 }
                 break;
+            case " kiss":
+                info = readFromFile(getSendingUser(raw));
+                today = df.format(Calendar.getInstance().getTime()).split(" ")[0];
+                if(info.equals("")){
+                    writeToFile(getSendingUser(raw), "100;0;" + today);
+                }
+                coins = Integer.parseInt(readFromFile(getSendingUser(raw)).split(";")[0]);
+                relationship = Integer.parseInt(readFromFile(getSendingUser(raw)).split(";")[1]);
+                date = (readFromFile(getSendingUser(raw)).split(";")[2].split("\n")[0]);
+                if(relationship > 50) {
+                    SendToChannel(channel,getSendingUser(raw) + " Got a kiss from this pretty gal!");
+                }
+                else{
+                    SendToChannel(channel, getSendingUser(raw) + " Got slapped!");
+                }
+                break;
+
             default:
                 SendToChannel(channel, "Type help to get a hold of what I am capable of! Also join #cyberia");
         }
