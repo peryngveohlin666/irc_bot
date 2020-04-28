@@ -220,14 +220,13 @@ public class Bot {
 
             default:
                 if(incoming.contains(" send") && incoming.split(" ").length==4){
-                    info = readFromFile(getSendingUser(raw));
-                    String name = incoming.split(" ")[2].toLowerCase();
-                    String price = incoming.split(" ")[3];
-                    int length = incoming.split(" ").length;
-                    System.out.println(name + price + length);
-                    File receiver = new File(name);
                     try
                     {
+                        info = readFromFile(getSendingUser(raw));
+                        String name = incoming.split(" ")[2].toLowerCase();
+                        int length = incoming.split(" ").length;
+                        File receiver = new File(name);
+                        String price = incoming.split(" ")[3];
                         if(receiver.exists()){
                             int coins_sender = Integer.parseInt(readFromFile(getSendingUser(raw)).split(";")[0]);
                             int relationship_sender = Integer.parseInt(readFromFile(getSendingUser(raw)).split(";")[1]);
@@ -253,7 +252,7 @@ public class Bot {
                             SendToChannel(channel, getSendingUser(raw) + " Sorry , can not find your friend in my database.... Umm would you be kind enough to ask them to register (by writing daily) or double check their nickanme?");
                         }
                     }
-                    catch (NumberFormatException e)
+                    catch (Exception e)
                     {
                         SendToChannel(channel, "Nice try Cia ;)");
                     }
