@@ -1,3 +1,4 @@
+import java.awt.desktop.SystemSleepEvent;
 import java.io.*;
 import java.net.Socket;
 import java.nio.file.Files;
@@ -10,7 +11,7 @@ public class Bot {
     Scanner input;
     Socket socket;
     String host = "";
-    List<String> rooms = Arrays.asList("#cyberia", "#help", "#spikeBot");
+    List<String> rooms = Arrays.asList("#cyberia", "#spikeBot");
     String nickname = "spikeBot";
 
     public void Connect(String host, int port) throws IOException {
@@ -160,13 +161,18 @@ public class Bot {
                 if(info.equals("")){
                     writeToFile(getSendingUser(raw), "100;0;" + today);
                 }
-                SendToChannel(channel, getSendingUser(raw) + " Baught a pint! It cost you 10 coins!");
                 coins = Integer.parseInt(readFromFile(getSendingUser(raw)).split(";")[0]);
                 relationship = Integer.parseInt(readFromFile(getSendingUser(raw)).split(";")[1]);
                 date = (readFromFile(getSendingUser(raw)).split(";")[2]);
-                coins = coins - 10;
-                relationship = relationship + 10;
-                writeToFile(getSendingUser(raw), coins + ";" + relationship + ";" + date);
+                if (coins >= 10) {
+                    SendToChannel(channel, getSendingUser(raw) + " Baught a pint! It cost you 10 coins!");
+                    coins = coins - 10;
+                    relationship = relationship + 10;
+                    writeToFile(getSendingUser(raw), coins + ";" + relationship + ";" + date);
+                }
+                else{
+                    SendToChannel(channel, getSendingUser(raw) + " Is broke");
+                }
                 break;
             case " coins":
                 info = readFromFile(getSendingUser(raw));
@@ -213,7 +219,49 @@ public class Bot {
                 break;
 
             default:
-                SendToChannel(channel, "Type help to get a hold of what I am capable of! Also join #cyberia");
+                if(incoming.contains(" send") && incoming.split(" ").length==4){
+                    info = readFromFile(getSendingUser(raw));
+                    String name = incoming.split(" ")[2];
+                    String price = incoming.split(" ")[3];
+                    int length = incoming.split(" ").length;
+                    System.out.println(name + price + length);
+                    File receiver = new File(name);
+                    try
+                    {
+                        if(receiver.exists()){
+                            int coins_sender = Integer.parseInt(readFromFile(getSendingUser(raw)).split(";")[0]);
+                            int relationship_sender = Integer.parseInt(readFromFile(getSendingUser(raw)).split(";")[1]);
+                            String date_sender = (readFromFile(getSendingUser(raw)).split(";")[2].split("\n")[0]);
+                            if(info.equals("")){
+                                writeToFile(getSendingUser(raw), "100;0;" + date_sender);
+                            }
+                            int coins_receiver = Integer.parseInt(readFromFile(getSendingUser(raw)).split(";")[0]);
+                            int relationship_receiver = Integer.parseInt(readFromFile(getSendingUser(raw)).split(";")[1]);
+                            String date_receiver = (readFromFile(getSendingUser(raw)).split(";")[2].split("\n")[0]);
+                            if (coins_sender >= Integer.parseInt(price) && Integer.parseInt(price) > 0) {
+                                writeToFile(getSendingUser(raw), (coins_sender - Integer.parseInt(price)) + ";" + relationship_sender + ";" + date_sender);
+                                writeToFile(name, (coins_sender + Integer.parseInt(price)) + ";" + relationship_sender + ";" + date_sender);
+                                SendToChannel(channel, getSendingUser(raw) + " sent " + receiver + " " + price + " coins. Don't use it for buying stuff like accela... Heard it is bad for you OwO");
+                            } else if (Integer.parseInt(price) <= 0) {
+                                SendToChannel(channel, getSendingUser(raw) + " is sneaky.");
+
+                            } else {
+                                SendToChannel(channel, getSendingUser(raw) + " is broke!");
+                            }
+                        }
+                        else{
+                            SendToChannel(channel, getSendingUser(raw) + " Sorry , can not find your friend in my database.... Umm would you be kind enough to ask them to register (by writing daily) or double check their nickanme?");
+                        }
+                    }
+                    catch (NumberFormatException e)
+                    {
+                        SendToChannel(channel, "Nice try Cia ;)");
+                    }
+                }
+
+                else {
+                    SendToChannel(channel, "Type help to get a hold of what I am capable of! Also join #cyberia");
+                }
         }
     }
 
