@@ -127,7 +127,7 @@ public class Bot {
         int coins, relationship;
         switch (incoming) {
             case " help":
-                SendToChannel(channel, "Type in stallman to get the lyrics for the free software song, Type in roll to get a random number between 0 and 100, beer to buy a pint! (this will cost you 10 coins), type daily to collect you daily coins, type coins to check the amount of coins you have, type kiss to try getting a kiss");
+                SendToChannel(channel, "Type in stallman to get the lyrics for the free software song, Type in roll to get a random number between 0 and 100, beer to buy a pint! (this will cost you 10 coins), type daily to collect you daily coins, type coins to check the amount of coins you have, type kiss to try getting a kiss, type send + <Username> to sent the user coins");
                 break;
             case " mert":
                 SendToChannel(channel, "cutie");
@@ -221,7 +221,7 @@ public class Bot {
             default:
                 if(incoming.contains(" send") && incoming.split(" ").length==4){
                     info = readFromFile(getSendingUser(raw));
-                    String name = incoming.split(" ")[2];
+                    String name = incoming.split(" ")[2].toLowerCase();
                     String price = incoming.split(" ")[3];
                     int length = incoming.split(" ").length;
                     System.out.println(name + price + length);
@@ -238,11 +238,11 @@ public class Bot {
                             int coins_receiver = Integer.parseInt(readFromFile(getSendingUser(raw)).split(";")[0]);
                             int relationship_receiver = Integer.parseInt(readFromFile(getSendingUser(raw)).split(";")[1]);
                             String date_receiver = (readFromFile(getSendingUser(raw)).split(";")[2].split("\n")[0]);
-                            if (coins_sender >= Integer.parseInt(price) && Integer.parseInt(price) > 0) {
+                            if (coins_sender >= Integer.parseInt(price) && Integer.parseInt(price) > 0 && !getSendingUser(raw).equals(name)) {
                                 writeToFile(getSendingUser(raw), (coins_sender - Integer.parseInt(price)) + ";" + relationship_sender + ";" + date_sender);
                                 writeToFile(name, (coins_sender + Integer.parseInt(price)) + ";" + relationship_sender + ";" + date_sender);
                                 SendToChannel(channel, getSendingUser(raw) + " sent " + receiver + " " + price + " coins. Don't use it for buying stuff like accela... Heard it is bad for you OwO");
-                            } else if (Integer.parseInt(price) <= 0) {
+                            } else if (Integer.parseInt(price) <= 0 || getSendingUser(raw).equals(name)) {
                                 SendToChannel(channel, getSendingUser(raw) + " is sneaky.");
 
                             } else {
