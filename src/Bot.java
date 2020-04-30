@@ -122,20 +122,28 @@ public class Bot {
         writeToFile(username, "100;0;" + "new");
     }
 
-    void updateCoins(String user, int change) throws IOException {
+    void updateCoins(String user, int new_coins) throws IOException {
         int coins = Integer.parseInt(readFromFile(user).split(";")[0]);
         int relationship = Integer.parseInt(readFromFile(user).split(";")[1]);
         String date = (readFromFile(user).split(";")[2]);
-        coins = coins + change;
+        coins = new_coins;
         writeToFile(user, coins + ";" + relationship + ";" + date);
     }
 
-    void updateRelationship(String user, int change) throws IOException {
+    void updateRelationship(String user, int new_relationship) throws IOException {
         int coins = Integer.parseInt(readFromFile(user).split(";")[0]);
         int relationship = Integer.parseInt(readFromFile(user).split(";")[1]);
         String date = (readFromFile(user).split(";")[2]);
-        relationship = relationship + change;
+        relationship = new_relationship;
         writeToFile(user, coins + ";" + relationship + ";" + date);
+    }
+
+    void dateToday(String user) throws IOException{
+        int coins = Integer.parseInt(readFromFile(user).split(";")[0]);
+        int relationship = Integer.parseInt(readFromFile(user).split(";")[1]);
+        DateFormat df = new SimpleDateFormat("yyyyMMdd");
+        String today = df.format(Calendar.getInstance().getTime()).split(" ")[0];
+        writeToFile(user, coins + ";" + relationship + ";" + today);
     }
 
     public void respond(String incoming, String channel, String raw) throws IOException {
@@ -181,12 +189,12 @@ public class Bot {
                 }
                 coins = Integer.parseInt(readFromFile(getSendingUser(raw)).split(";")[0]);
                 relationship = Integer.parseInt(readFromFile(getSendingUser(raw)).split(";")[1]);
-                date = (readFromFile(getSendingUser(raw)).split(";")[2]);
                 if (coins >= 10) {
                     sendToChannel(channel, getSendingUser(raw) + " Baught a pint! It cost you 10 coins!");
                     coins = coins - 10;
                     relationship = relationship + 10;
-                    writeToFile(getSendingUser(raw), coins + ";" + relationship + ";" + date);
+                    updateCoins(getSendingUser(raw), coins);
+                    updateRelationship(getSendingUser(raw), relationship);
                 }
                 else{
                     sendToChannel(channel, getSendingUser(raw) + " Is broke");
@@ -211,8 +219,10 @@ public class Bot {
                if (!date.equals(today)){
                 sendToChannel(channel, getSendingUser(raw) + " Collected their daily coins of 100!");
                 coins = coins + 100;
-                relationship = relationship + 1;
-                writeToFile(getSendingUser(raw), coins + ";" + relationship + ";" + today);
+                relationship = relationship + 5;
+                updateCoins(getSendingUser(raw), coins);
+                updateRelationship(getSendingUser(raw), relationship);
+                dateToday(getSendingUser(raw));
                 }
                 else{
                     sendToChannel(channel, getSendingUser(raw) + " You can't collect any more coins today");
@@ -223,14 +233,13 @@ public class Bot {
                 if(info.equals("")){
                     createUser(getSendingUser(raw));
                 }
-                coins = Integer.parseInt(readFromFile(getSendingUser(raw)).split(";")[0]);
                 relationship = Integer.parseInt(readFromFile(getSendingUser(raw)).split(";")[1]);
-                date = (readFromFile(getSendingUser(raw)).split(";")[2].split("\n")[0]);
                 if(relationship > 50) {
                     sendToChannel(channel,getSendingUser(raw) + " Got a kiss from this pretty gal!");
                 }
                 else{
                     sendToChannel(channel, getSendingUser(raw) + " Got slapped!");
+                    updateRelationship(getSendingUser(raw), relationship - 10);
                 }
                 break;
 
@@ -254,8 +263,8 @@ public class Bot {
                             int relationship_receiver = Integer.parseInt(readFromFile(getSendingUser(raw)).split(";")[1]);
                             String date_receiver = (readFromFile(getSendingUser(raw)).split(";")[2].split("\n")[0]);
                             if (coins_sender >= Integer.parseInt(price) && Integer.parseInt(price) > 0 && !getSendingUser(raw).equals(name)) {
-                                writeToFile(getSendingUser(raw), (coins_sender - Integer.parseInt(price)) + ";" + relationship_sender + ";" + date_sender);
-                                writeToFile(name, (coins_receiver + Integer.parseInt(price)) + ";" + relationship_receiver + ";" + date_receiver);
+                                updateCoins(getSendingUser(raw), coins_sender - Integer.parseInt(price));
+                                updateCoins(name, coins_receiver + Integer.parseInt(price));
                                 sendToChannel(channel, getSendingUser(raw) + " sent " + receiver + " " + price + " coins. Don't use it for buying stuff like accela... Heard it is bad for you OwO");
                             } else if (Integer.parseInt(price) <= 0 || getSendingUser(raw).equals(name)) {
                                 sendToChannel(channel, getSendingUser(raw) + " is sneaky.");
