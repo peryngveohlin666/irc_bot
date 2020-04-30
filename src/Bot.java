@@ -13,29 +13,29 @@ public class Bot {
     List<String> rooms = Arrays.asList("#cyberia", "#spikeBot", "#help");
     String nickname = "Lain";
 
-    public void Connect(String host, int port) throws IOException {
+    public void connect(String host, int port) throws IOException {
         this.socket = new Socket(host, port);
         this.output = new PrintWriter(socket.getOutputStream(), true);
         this.input = new Scanner(socket.getInputStream());
         this.host = host;
 
-        SendMessage("NICK " + nickname);
-        SendMessage("User " + nickname + " 0 * : " + nickname);
+        sendMessage("NICK " + nickname);
+        sendMessage("User " + nickname + " 0 * : " + nickname);
         for (int i = 0; i < this.rooms.size(); i++) {
-            SendMessage("JOIN " + this.rooms.get(i));
+            sendMessage("JOIN " + this.rooms.get(i));
         }
         while (input.hasNext()) {
             onMessageReceived(input.nextLine());
         }
     }
 
-    public void SendMessage(String message) {
+    public void sendMessage(String message) {
         output.print(message + "\n");
         output.flush();
     }
 
-    public void SendToChannel(String channel, String message) {
-        SendMessage("PRIVMSG " + channel + " :" + message);
+    public void sendToChannel(String channel, String message) {
+        sendMessage("PRIVMSG " + channel + " :" + message);
     }
 
     public void Disconnect() throws IOException {
@@ -53,22 +53,22 @@ public class Bot {
         if (message.split(":")[1].contains("353")) {
             String users[] = getUserList(message);
             for (int i = 0; i < users.length; i++) {
-                CreateAFile(users[i]);
+                createAFile(users[i]);
             }
         }
 
 
-        if (CleanMessage(message).startsWith(this.nickname)) {
-            Respond(CleanMessage(message.replace(nickname, "")), getSendingLocation(message), message);
+        if (cleanMessage(message).startsWith(this.nickname)) {
+            Respond(cleanMessage(message.replace(nickname, "")), getSendingLocation(message), message);
         }
 
-        LogMessages(getSendingUser(message) + ": " + CleanMessage(message) + " (In " + getSendingLocation(message) + ")");
+        logMessages(getSendingUser(message) + ": " + cleanMessage(message) + " (In " + getSendingLocation(message) + ")");
 
         System.out.println(message);
 
     }
 
-    public String CleanMessage(String message) {
+    public String cleanMessage(String message) {
         String[] out = message.split(":");
         String rt = "";
         if (out.length >= 3) {
@@ -79,7 +79,7 @@ public class Bot {
         return rt;
     }
 
-    public void LogMessages(String message) throws IOException {
+    public void logMessages(String message) throws IOException {
         File file = new File("log.txt");
         FileWriter writer = new FileWriter("log.txt", true);
         writer.write(message);
@@ -87,7 +87,7 @@ public class Bot {
         writer.close();
     }
 
-    public void CreateAFile(String name) throws IOException {
+    public void createAFile(String name) throws IOException {
         File file = new File(name);
         FileWriter writer = new FileWriter(name, true);
         writer.close();
@@ -122,6 +122,10 @@ public class Bot {
         writeToFile(username, "100;0;" + "new");
     }
 
+    void updateCoins(String username){
+
+    }
+
     public void Respond(String incoming, String channel, String raw) throws IOException {
         DateFormat df = new SimpleDateFormat("yyyyMMdd");
         String info;
@@ -130,13 +134,13 @@ public class Bot {
         int coins, relationship;
         switch (incoming) {
             case " help":
-                SendToChannel(channel, "Type in stallman to get the lyrics for the free software song, Type in roll to get a random number between 0 and 100, beer to buy a pint! (this will cost you 10 coins), type daily to collect you daily coins, type coins to check the amount of coins you have, type kiss to try getting a kiss, type send + <Username> to sent the user coins");
+                sendToChannel(channel, "Type in stallman to get the lyrics for the free software song, Type in roll to get a random number between 0 and 100, beer to buy a pint! (this will cost you 10 coins), type daily to collect you daily coins, type coins to check the amount of coins you have, type kiss to try getting a kiss, type send + <Username> to sent the user coins");
                 break;
             case " mert":
-                SendToChannel(channel, "cutie");
+                sendToChannel(channel, "cutie");
                 break;
             case " stallman":
-                SendToChannel(channel, "Join us now and share the software " +
+                sendToChannel(channel, "Join us now and share the software " +
                         "You'll be free, hackers, you'll be free. " +
                         "Join us now and share the software; " +
                         "You'll be free, hackers, you'll be free. " +
@@ -144,7 +148,7 @@ public class Bot {
                         "That is true, hackers, that is true. " +
                         "But they cannot help their neighbors; " +
                         "That's not good, hackers, that's not good. ");
-                SendToChannel(channel, "When we have enough free software " +
+                sendToChannel(channel, "When we have enough free software " +
                         "At our call, hackers, at our call, " +
                         "We'll kick out those dirty licenses " +
                         "Ever more, hackers, ever more. " +
@@ -156,7 +160,7 @@ public class Bot {
             case " roll":
                 Random rand = new Random();
                 int roll = rand.nextInt(101);
-                SendToChannel(channel,getSendingUser(raw) + " rolled " + Integer.toString(roll) + ".");
+                sendToChannel(channel,getSendingUser(raw) + " rolled " + Integer.toString(roll) + ".");
                 break;
             case " beer":
                 info = readFromFile(getSendingUser(raw));
@@ -168,13 +172,13 @@ public class Bot {
                 relationship = Integer.parseInt(readFromFile(getSendingUser(raw)).split(";")[1]);
                 date = (readFromFile(getSendingUser(raw)).split(";")[2]);
                 if (coins >= 10) {
-                    SendToChannel(channel, getSendingUser(raw) + " Baught a pint! It cost you 10 coins!");
+                    sendToChannel(channel, getSendingUser(raw) + " Baught a pint! It cost you 10 coins!");
                     coins = coins - 10;
                     relationship = relationship + 10;
                     writeToFile(getSendingUser(raw), coins + ";" + relationship + ";" + date);
                 }
                 else{
-                    SendToChannel(channel, getSendingUser(raw) + " Is broke");
+                    sendToChannel(channel, getSendingUser(raw) + " Is broke");
                 }
                 break;
             case " coins":
@@ -182,7 +186,7 @@ public class Bot {
                 if(info.equals("")){
                     createUser(getSendingUser(raw));
                 }
-                SendToChannel(channel, "You have: " + readFromFile(getSendingUser(raw)).split(";")[0] + " coins.");
+                sendToChannel(channel, "You have: " + readFromFile(getSendingUser(raw)).split(";")[0] + " coins.");
                 break;
             case " daily":
                 info = readFromFile(getSendingUser(raw));
@@ -194,13 +198,13 @@ public class Bot {
                 relationship = Integer.parseInt(readFromFile(getSendingUser(raw)).split(";")[1]);
                 date = (readFromFile(getSendingUser(raw)).split(";")[2].split("\n")[0]);
                if (!date.equals(today)){
-                SendToChannel(channel, getSendingUser(raw) + " Collected their daily coins of 100!");
+                sendToChannel(channel, getSendingUser(raw) + " Collected their daily coins of 100!");
                 coins = coins + 100;
                 relationship = relationship + 1;
                 writeToFile(getSendingUser(raw), coins + ";" + relationship + ";" + today);
                 }
                 else{
-                    SendToChannel(channel, getSendingUser(raw) + " You can't collect any more coins today (- If you registered today you already got your daily coins :< -)");
+                    sendToChannel(channel, getSendingUser(raw) + " You can't collect any more coins today");
                 }
                 break;
             case " kiss":
@@ -212,10 +216,10 @@ public class Bot {
                 relationship = Integer.parseInt(readFromFile(getSendingUser(raw)).split(";")[1]);
                 date = (readFromFile(getSendingUser(raw)).split(";")[2].split("\n")[0]);
                 if(relationship > 50) {
-                    SendToChannel(channel,getSendingUser(raw) + " Got a kiss from this pretty gal!");
+                    sendToChannel(channel,getSendingUser(raw) + " Got a kiss from this pretty gal!");
                 }
                 else{
-                    SendToChannel(channel, getSendingUser(raw) + " Got slapped!");
+                    sendToChannel(channel, getSendingUser(raw) + " Got slapped!");
                 }
                 break;
 
@@ -241,26 +245,26 @@ public class Bot {
                             if (coins_sender >= Integer.parseInt(price) && Integer.parseInt(price) > 0 && !getSendingUser(raw).equals(name)) {
                                 writeToFile(getSendingUser(raw), (coins_sender - Integer.parseInt(price)) + ";" + relationship_sender + ";" + date_sender);
                                 writeToFile(name, (coins_sender + Integer.parseInt(price)) + ";" + relationship_sender + ";" + date_sender);
-                                SendToChannel(channel, getSendingUser(raw) + " sent " + receiver + " " + price + " coins. Don't use it for buying stuff like accela... Heard it is bad for you OwO");
+                                sendToChannel(channel, getSendingUser(raw) + " sent " + receiver + " " + price + " coins. Don't use it for buying stuff like accela... Heard it is bad for you OwO");
                             } else if (Integer.parseInt(price) <= 0 || getSendingUser(raw).equals(name)) {
-                                SendToChannel(channel, getSendingUser(raw) + " is sneaky.");
+                                sendToChannel(channel, getSendingUser(raw) + " is sneaky.");
 
                             } else {
-                                SendToChannel(channel, getSendingUser(raw) + " is broke!");
+                                sendToChannel(channel, getSendingUser(raw) + " is broke!");
                             }
                         }
                         else{
-                            SendToChannel(channel, getSendingUser(raw) + " Sorry , can not find your friend in my database.... Umm would you be kind enough to ask them to register (by writing daily) or double check their nickanme?");
+                            sendToChannel(channel, getSendingUser(raw) + " Sorry , can not find your friend in my database.... Umm would you be kind enough to ask them to register (by writing daily) or double check their nickanme?");
                         }
                     }
                     catch (Exception e)
                     {
-                        SendToChannel(channel, "Nice try Cia ;)");
+                        sendToChannel(channel, "Nice try Cia ;)");
                     }
                 }
 
                 else {
-                    SendToChannel(channel, "Type help to get a hold of what I am capable of! Also join #cyberia");
+                    sendToChannel(channel, "Type help to get a hold of what I am capable of! Also join #cyberia");
                 }
         }
     }
@@ -281,7 +285,7 @@ public class Bot {
     }
 
     public void Pong(String message) throws IOException {
-        SendMessage(message.replace("PING", "PONG"));
+        sendMessage(message.replace("PING", "PONG"));
     }
 
 }
