@@ -1,4 +1,3 @@
-import java.awt.desktop.SystemSleepEvent;
 import java.io.*;
 import java.net.Socket;
 import java.nio.file.Files;
@@ -11,8 +10,8 @@ public class Bot {
     Scanner input;
     Socket socket;
     String host = "";
-    List<String> rooms = Arrays.asList("#cyberia", "#spikeBot");
-    String nickname = "spikeBot";
+    List<String> rooms = Arrays.asList("#cyberia", "#spikeBot", "#help");
+    String nickname = "Lain";
 
     public void Connect(String host, int port) throws IOException {
         this.socket = new Socket(host, port);
@@ -119,6 +118,10 @@ public class Bot {
         return users;
     }
 
+    public void createUser(String username) throws IOException {
+        writeToFile(username, "100;0;" + "new");
+    }
+
     public void Respond(String incoming, String channel, String raw) throws IOException {
         DateFormat df = new SimpleDateFormat("yyyyMMdd");
         String info;
@@ -159,7 +162,7 @@ public class Bot {
                 info = readFromFile(getSendingUser(raw));
                 today = df.format(Calendar.getInstance().getTime());
                 if(info.equals("")){
-                    writeToFile(getSendingUser(raw), "100;0;" + today);
+                    createUser(getSendingUser(raw));
                 }
                 coins = Integer.parseInt(readFromFile(getSendingUser(raw)).split(";")[0]);
                 relationship = Integer.parseInt(readFromFile(getSendingUser(raw)).split(";")[1]);
@@ -176,9 +179,8 @@ public class Bot {
                 break;
             case " coins":
                 info = readFromFile(getSendingUser(raw));
-                today = df.format(Calendar.getInstance().getTime());
                 if(info.equals("")){
-                    writeToFile(getSendingUser(raw), "100;0;" + today);
+                    createUser(getSendingUser(raw));
                 }
                 SendToChannel(channel, "You have: " + readFromFile(getSendingUser(raw)).split(";")[0] + " coins.");
                 break;
@@ -186,7 +188,7 @@ public class Bot {
                 info = readFromFile(getSendingUser(raw));
                 today = df.format(Calendar.getInstance().getTime()).split(" ")[0];
                 if(info.equals("")){
-                    writeToFile(getSendingUser(raw), "100;0;" + today);
+                    createUser(getSendingUser(raw));
                 }
                 coins = Integer.parseInt(readFromFile(getSendingUser(raw)).split(";")[0]);
                 relationship = Integer.parseInt(readFromFile(getSendingUser(raw)).split(";")[1]);
@@ -203,9 +205,8 @@ public class Bot {
                 break;
             case " kiss":
                 info = readFromFile(getSendingUser(raw));
-                today = df.format(Calendar.getInstance().getTime()).split(" ")[0];
                 if(info.equals("")){
-                    writeToFile(getSendingUser(raw), "100;0;" + today);
+                    createUser(getSendingUser(raw));
                 }
                 coins = Integer.parseInt(readFromFile(getSendingUser(raw)).split(";")[0]);
                 relationship = Integer.parseInt(readFromFile(getSendingUser(raw)).split(";")[1]);
@@ -232,7 +233,7 @@ public class Bot {
                             int relationship_sender = Integer.parseInt(readFromFile(getSendingUser(raw)).split(";")[1]);
                             String date_sender = (readFromFile(getSendingUser(raw)).split(";")[2].split("\n")[0]);
                             if(info.equals("")){
-                                writeToFile(getSendingUser(raw), "100;0;" + date_sender);
+                                createUser(getSendingUser(raw));
                             }
                             int coins_receiver = Integer.parseInt(readFromFile(getSendingUser(raw)).split(";")[0]);
                             int relationship_receiver = Integer.parseInt(readFromFile(getSendingUser(raw)).split(";")[1]);
