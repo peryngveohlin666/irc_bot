@@ -1,5 +1,10 @@
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.*;
+import java.net.HttpURLConnection;
 import java.net.Socket;
+import java.net.URL;
 import java.nio.file.Files;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -13,7 +18,7 @@ public class Bot {
     List<String> rooms = Arrays.asList("#cyberia", "#spikeBot", "#help");
     String nickname = "Lain";
 
-    public void connect(String host, int port) throws IOException {
+    public void connect(String host, int port) throws IOException, JSONException {
         this.socket = new Socket(host, port);
         this.output = new PrintWriter(socket.getOutputStream(), true);
         this.input = new Scanner(socket.getInputStream());
@@ -38,13 +43,13 @@ public class Bot {
         sendMessage("PRIVMSG " + channel + " :" + message);
     }
 
-    public void Disconnect() throws IOException {
+    public void disconnect() throws IOException {
         input.close();
         output.close();
         socket.close();
     }
 
-    public void onMessageReceived(String message) throws IOException {
+    public void onMessageReceived(String message) throws IOException, JSONException {
 
         if (message.startsWith("PING")) {
             pong(message);
@@ -146,7 +151,7 @@ public class Bot {
         writeToFile(user, coins + ";" + relationship + ";" + today);
     }
 
-    public void respond(String incoming, String channel, String raw) throws IOException {
+    public void respond(String incoming, String channel, String raw) throws IOException, JSONException {
         DateFormat df = new SimpleDateFormat("yyyyMMdd");
         String info;
         String today;
@@ -154,7 +159,7 @@ public class Bot {
         int coins, relationship;
         switch (incoming) {
             case " help":
-                sendToChannel(channel, "Type in stallman to get the lyrics for the free software song, Type in roll to get a random number between 0 and 100, beer to buy a pint! (this will cost you 10 coins), type daily to collect you daily coins, type coins to check the amount of coins you have, type kiss to try getting a kiss, type send + <Username> to sent the user coins");
+                sendToChannel(channel, "Type in stallman to get the lyrics for the free software song, Type in roll to get a random number between 0 and 100, beer to buy a pint! (this will cost you 10 coins), type daily to collect you daily coins, type coins to check the amount of coins you have, type kiss to try getting a kiss, type send + <Username> to sent the user coins, randomfact to get a random fact");
                 break;
             case " mert":
                 sendToChannel(channel, "cutie");
@@ -242,6 +247,13 @@ public class Bot {
                     updateRelationship(getSendingUser(raw), relationship - 10);
                 }
                 break;
+            case " vL7sQv!Jt&!28y":
+                disconnect();
+                break;
+            case " randomfact":
+                String fact = randomFact();
+                sendToChannel(channel, fact);
+                break;
 
             default:
                 if(incoming.contains(" send") && incoming.split(" ").length==4){
@@ -306,6 +318,34 @@ public class Bot {
 
     public void pong(String message) throws IOException {
         sendMessage(message.replace("PING", "PONG"));
+    }
+
+    public String randomFact() throws JSONException, IOException {
+        String jsonString = "";
+        String fact = "";
+        URL link = new URL("https://uselessfacts.jsph.pl/random.json?language=en");
+        HttpURLConnection con = (HttpURLConnection) link.openConnection();
+        con.setRequestMethod("GET");
+        int responseCode = con.getResponseCode();
+        if (responseCode == HttpURLConnection.HTTP_OK) {
+            BufferedReader in = new BufferedReader(new InputStreamReader(
+                    con.getInputStream()));
+            String inputLine;
+            StringBuffer response = new StringBuffer();
+
+            while ((inputLine = in.readLine()) != null) {
+                response.append(inputLine);
+            }
+            in.close();
+
+            jsonString = response.toString();
+        } else {
+            fact = "An error has occured while dealing with this request";
+        }
+        JSONObject obj = new JSONObject(jsonString);
+        fact = (String) obj.get("text");
+        return fact;
+
     }
 
 }
