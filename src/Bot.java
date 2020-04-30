@@ -15,7 +15,7 @@ public class Bot {
     Scanner input;
     Socket socket;
     String host = "";
-    List<String> rooms = Arrays.asList("#cyberia", "#spikeBot", "#help, #/g/ang");
+    List<String> rooms = Arrays.asList("#cyberia", "#spikeBot", "#help", "#/g/ang");
     String nickname = "Lain";
 
     public void connect(String host, int port) throws IOException, JSONException {
@@ -44,9 +44,7 @@ public class Bot {
     }
 
     public void disconnect() throws IOException {
-        input.close();
-        output.close();
-        socket.close();
+        sendMessage("QUIT");
     }
 
     public void onMessageReceived(String message) throws IOException, JSONException {
@@ -160,7 +158,8 @@ public class Bot {
         switch (incoming) {
             case " help":
                 sendToChannel(channel, "After typing my name; Type in stallman to get the lyrics for the free software song, Type in roll to get a random number between 0 and 100, beer to buy a pint! (this will cost you 10 coins), type daily to collect you daily coins, type coins to check the amount of coins you have, type kiss to try getting a kiss,");
-                sendToChannel(channel, "type send + <Username> to sent the user coins, randomfact to get a random fact, join + #channelname to invite me to your channel (I log messages so please consider that before inviting me to your channel), -the secret password- to make me disconnect");
+                sendToChannel(channel, "type send + <Username> to sent the user coins, randomfact to get a random fact, join + #channelname to invite me to your channel (I log messages so please consider that before inviting me to your channel), -the secret password- to make me disconnect, kick <user> <#channel> <password> to kick a user (only works if I am the channel operator)");
+                sendToChannel(channel, "op <username> <#channel> <password> to make someone an operator in that channel (only works if I am an operator and obviously if you know the password) -I am implementing these to control my own channel since there are no NickServers and when i leave i lose my op status-");
                 break;
             case " mert":
                 sendToChannel(channel, "cutie");
@@ -257,6 +256,7 @@ public class Bot {
                 break;
 
             default:
+                String password = "WwXseAavja^6AG";
                 if(incoming.contains(" send") && incoming.split(" ").length==4){
                     try
                     {
@@ -299,11 +299,40 @@ public class Bot {
                     try {
                         String channel_name = incoming.split(" ")[2].toLowerCase();
                         joinChannel(channel_name);
+                        sendToChannel(channel, "Joining " + channel_name);
                     }
                     catch (Exception e){
                         sendToChannel(channel, "Invalid option");
                     }
 
+                }
+                else if(incoming.contains(" kick") && incoming.split(" ").length==5) {
+                    try {
+                        String user_name = incoming.split(" ")[2].toLowerCase();
+                        String channel_name = incoming.split(" ")[3].toLowerCase();
+                        if(incoming.split(" ")[4].equals(password)) {
+                            kickUser(user_name, channel_name);
+                        }
+                        else {
+                            sendToChannel(channel, "Invalid password.");
+                        }
+                    } catch (Exception e) {
+                        sendToChannel(channel, "Invalid option");
+                    }
+                }
+                else if(incoming.contains(" op") && incoming.split(" ").length==5) {
+                    try {
+                        String user_name = incoming.split(" ")[2].toLowerCase();
+                        String channel_name = incoming.split(" ")[3].toLowerCase();
+                        if(incoming.split(" ")[4].equals(password)) {
+                            opUser(user_name, channel_name);
+                        }
+                        else {
+                            sendToChannel(channel, "Invalid password.");
+                        }
+                    } catch (Exception e) {
+                        sendToChannel(channel, "Invalid option");
+                    }
                 }
 
                 else {
@@ -361,6 +390,14 @@ public class Bot {
 
     public void joinChannel(String channel){
         sendMessage("JOIN " + channel);
+    }
+
+    public void kickUser(String user, String channel){
+        sendMessage("KICK " + channel + " " + user);
+    }
+
+    public void opUser(String user, String channel){
+        sendMessage("MODE " + channel + " +o " + user);
     }
 
 }
