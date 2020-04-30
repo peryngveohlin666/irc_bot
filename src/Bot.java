@@ -47,7 +47,7 @@ public class Bot {
     public void onMessageReceived(String message) throws IOException {
 
         if (message.startsWith("PING")) {
-            Pong(message);
+            pong(message);
         }
 
         if (message.split(":")[1].contains("353")) {
@@ -59,7 +59,7 @@ public class Bot {
 
 
         if (cleanMessage(message).startsWith(this.nickname)) {
-            Respond(cleanMessage(message.replace(nickname, "")), getSendingLocation(message), message);
+            respond(cleanMessage(message.replace(nickname, "")), getSendingLocation(message), message);
         }
 
         logMessages(getSendingUser(message) + ": " + cleanMessage(message) + " (In " + getSendingLocation(message) + ")");
@@ -122,11 +122,23 @@ public class Bot {
         writeToFile(username, "100;0;" + "new");
     }
 
-    void updateCoins(String username){
-
+    void updateCoins(String user, int change) throws IOException {
+        int coins = Integer.parseInt(readFromFile(user).split(";")[0]);
+        int relationship = Integer.parseInt(readFromFile(user).split(";")[1]);
+        String date = (readFromFile(user).split(";")[2]);
+        coins = coins + change;
+        writeToFile(user, coins + ";" + relationship + ";" + date);
     }
 
-    public void Respond(String incoming, String channel, String raw) throws IOException {
+    void updateRelationship(String user, int change) throws IOException {
+        int coins = Integer.parseInt(readFromFile(user).split(";")[0]);
+        int relationship = Integer.parseInt(readFromFile(user).split(";")[1]);
+        String date = (readFromFile(user).split(";")[2]);
+        relationship = relationship + change;
+        writeToFile(user, coins + ";" + relationship + ";" + date);
+    }
+
+    public void respond(String incoming, String channel, String raw) throws IOException {
         DateFormat df = new SimpleDateFormat("yyyyMMdd");
         String info;
         String today;
@@ -164,7 +176,6 @@ public class Bot {
                 break;
             case " beer":
                 info = readFromFile(getSendingUser(raw));
-                today = df.format(Calendar.getInstance().getTime());
                 if(info.equals("")){
                     createUser(getSendingUser(raw));
                 }
@@ -244,7 +255,7 @@ public class Bot {
                             String date_receiver = (readFromFile(getSendingUser(raw)).split(";")[2].split("\n")[0]);
                             if (coins_sender >= Integer.parseInt(price) && Integer.parseInt(price) > 0 && !getSendingUser(raw).equals(name)) {
                                 writeToFile(getSendingUser(raw), (coins_sender - Integer.parseInt(price)) + ";" + relationship_sender + ";" + date_sender);
-                                writeToFile(name, (coins_sender + Integer.parseInt(price)) + ";" + relationship_sender + ";" + date_sender);
+                                writeToFile(name, (coins_receiver + Integer.parseInt(price)) + ";" + relationship_receiver + ";" + date_receiver);
                                 sendToChannel(channel, getSendingUser(raw) + " sent " + receiver + " " + price + " coins. Don't use it for buying stuff like accela... Heard it is bad for you OwO");
                             } else if (Integer.parseInt(price) <= 0 || getSendingUser(raw).equals(name)) {
                                 sendToChannel(channel, getSendingUser(raw) + " is sneaky.");
@@ -284,7 +295,7 @@ public class Bot {
         return user;
     }
 
-    public void Pong(String message) throws IOException {
+    public void pong(String message) throws IOException {
         sendMessage(message.replace("PING", "PONG"));
     }
 
