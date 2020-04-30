@@ -15,7 +15,7 @@ public class Bot {
     Scanner input;
     Socket socket;
     String host = "";
-    List<String> rooms = Arrays.asList("#cyberia", "#spikeBot", "#help");
+    List<String> rooms = Arrays.asList("#cyberia", "#spikeBot", "#help, #/g/ang");
     String nickname = "Lain";
 
     public void connect(String host, int port) throws IOException, JSONException {
@@ -159,7 +159,8 @@ public class Bot {
         int coins, relationship;
         switch (incoming) {
             case " help":
-                sendToChannel(channel, "Type in stallman to get the lyrics for the free software song, Type in roll to get a random number between 0 and 100, beer to buy a pint! (this will cost you 10 coins), type daily to collect you daily coins, type coins to check the amount of coins you have, type kiss to try getting a kiss, type send + <Username> to sent the user coins, randomfact to get a random fact");
+                sendToChannel(channel, "After typing my name; Type in stallman to get the lyrics for the free software song, Type in roll to get a random number between 0 and 100, beer to buy a pint! (this will cost you 10 coins), type daily to collect you daily coins, type coins to check the amount of coins you have, type kiss to try getting a kiss,");
+                sendToChannel(channel, "type send + <Username> to sent the user coins, randomfact to get a random fact, join + #channelname to invite me to your channel (I log messages so please consider that before inviting me to your channel), -the secret password- to make me disconnect");
                 break;
             case " mert":
                 sendToChannel(channel, "cutie");
@@ -195,7 +196,7 @@ public class Bot {
                 coins = Integer.parseInt(readFromFile(getSendingUser(raw)).split(";")[0]);
                 relationship = Integer.parseInt(readFromFile(getSendingUser(raw)).split(";")[1]);
                 if (coins >= 10) {
-                    sendToChannel(channel, getSendingUser(raw) + " Baught a pint! It cost you 10 coins!");
+                    sendToChannel(channel, getSendingUser(raw) + " Baught a pint! It cost you 10 coins! Your relationship with the bartender improved!");
                     coins = coins - 10;
                     relationship = relationship + 10;
                     updateCoins(getSendingUser(raw), coins);
@@ -240,10 +241,10 @@ public class Bot {
                 }
                 relationship = Integer.parseInt(readFromFile(getSendingUser(raw)).split(";")[1]);
                 if(relationship > 50) {
-                    sendToChannel(channel,getSendingUser(raw) + " Got a kiss from this pretty gal!");
+                    sendToChannel(channel,getSendingUser(raw) + " Got a kiss from this pretty lady!");
                 }
                 else{
-                    sendToChannel(channel, getSendingUser(raw) + " Got slapped!");
+                    sendToChannel(channel, getSendingUser(raw) + " Got slapped by this pretty lady trying to kiss her!");
                     updateRelationship(getSendingUser(raw), relationship - 10);
                 }
                 break;
@@ -271,9 +272,9 @@ public class Bot {
                             if(info.equals("")){
                                 createUser(getSendingUser(raw));
                             }
-                            int coins_receiver = Integer.parseInt(readFromFile(getSendingUser(raw)).split(";")[0]);
-                            int relationship_receiver = Integer.parseInt(readFromFile(getSendingUser(raw)).split(";")[1]);
-                            String date_receiver = (readFromFile(getSendingUser(raw)).split(";")[2].split("\n")[0]);
+                            int coins_receiver = Integer.parseInt(readFromFile(name).split(";")[0]);
+                            int relationship_receiver = Integer.parseInt(readFromFile(name).split(";")[1]);
+                            String date_receiver = (readFromFile(name).split(";")[2].split("\n")[0]);
                             if (coins_sender >= Integer.parseInt(price) && Integer.parseInt(price) > 0 && !getSendingUser(raw).equals(name)) {
                                 updateCoins(getSendingUser(raw), coins_sender - Integer.parseInt(price));
                                 updateCoins(name, coins_receiver + Integer.parseInt(price));
@@ -291,12 +292,22 @@ public class Bot {
                     }
                     catch (Exception e)
                     {
-                        sendToChannel(channel, "Nice try Cia ;)");
+                        sendToChannel(channel, "This breaks my heart (you can't do this)");
                     }
+                }
+                else if(incoming.contains(" join #") && incoming.split(" ").length==3){
+                    try {
+                        String channel_name = incoming.split(" ")[2].toLowerCase();
+                        joinChannel(channel_name);
+                    }
+                    catch (Exception e){
+                        sendToChannel(channel, "Invalid option");
+                    }
+
                 }
 
                 else {
-                    sendToChannel(channel, "Type help to get a hold of what I am capable of! Also join #cyberia");
+                    sendToChannel(channel, "Type help to get a hold of what I am capable of.");
                 }
         }
     }
@@ -340,12 +351,16 @@ public class Bot {
 
             jsonString = response.toString();
         } else {
-            fact = "An error has occured while dealing with this request";
+            fact = "An error has occurred while dealing with this request";
         }
         JSONObject obj = new JSONObject(jsonString);
         fact = (String) obj.get("text");
         return fact;
 
+    }
+
+    public void joinChannel(String channel){
+        sendMessage("JOIN " + channel);
     }
 
 }
