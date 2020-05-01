@@ -250,9 +250,6 @@ public class Bot {
                     updateRelationship(getSendingUser(raw), relationship - 10);
                 }
                 break;
-            case " dc WwXseAavja^6AG":
-                disconnect();
-                break;
             case " randomfact":
                 String fact = randomFact();
                 sendToChannel(channel, fact);
@@ -357,7 +354,12 @@ public class Bot {
                         sendToChannel(channel, "Invalid option");
                     }
                 }
-
+                else if (incoming.contains(" dc") && incoming.split(" ").length>=3){
+                    int len = incoming.split(" ").length;
+                    if(incoming.split(" ")[len-1].equals(password)) {
+                        disconnect();
+                    }
+                }
                 else {
                     sendToChannel(channel, "Type help to get a hold of what I am capable of.");
                 }
