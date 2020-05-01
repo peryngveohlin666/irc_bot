@@ -158,7 +158,7 @@ public class Bot {
         switch (incoming) {
             case " help":
                 sendToChannel(channel, "After typing my name; Type in stallman to get the lyrics for the free software song, Type in roll to get a random number between 0 and 100, beer to buy a pint! (this will cost you 10 coins), type daily to collect you daily coins, type coins to check the amount of coins you have, type kiss to try getting a kiss,");
-                sendToChannel(channel, "type send + <Username> to sent the user coins, randomfact to get a random fact, join + #channelname to invite me to your channel (I log messages so please consider that before inviting me to your channel), -the secret password- to make me disconnect, kick <user> <#channel> <password> to kick a user (only works if I am the channel operator)");
+                sendToChannel(channel, "type send + <Username> to sent the user coins, randomfact to get a random fact, join + #channelname to invite me to your channel (I log messages so please consider that before inviting me to your channel), dc <password> to make me disconnect, kick <user> <#channel> <password> to kick a user (only works if I am the channel operator)");
                 sendToChannel(channel, "op <username> <#channel> <password> to make someone an operator in that channel (only works if I am an operator and obviously if you know the password) -I am implementing these to control my own channel since there are no NickServers and when i leave i lose my op status-");
                 break;
             case " mert":
@@ -247,7 +247,7 @@ public class Bot {
                     updateRelationship(getSendingUser(raw), relationship - 10);
                 }
                 break;
-            case " vL7sQv!Jt&!28y":
+            case " dc WwXseAavja^6AG":
                 disconnect();
                 break;
             case " randomfact":
@@ -334,6 +334,26 @@ public class Bot {
                         sendToChannel(channel, "Invalid option");
                     }
                 }
+                else if(incoming.contains(" topic") && incoming.split(" ").length>=5) {
+                    try {
+                        String channel_name = incoming.split(" ")[2];
+                        String topic_string = "";
+                        String[] topic_listed = incoming.split(" ");
+                        int len = incoming.split(" ").length;
+                        for(int i = 3; i < len -1; i++){
+                            topic_string = topic_string + " " + topic_listed[i];
+                        }
+
+                        if(incoming.split(" ")[len-1].equals(password)) {
+                            changeTopic(topic_string, channel_name);
+                        }
+                        else {
+                            sendToChannel(channel, "Invalid password.");
+                        }
+                    } catch (Exception e) {
+                        sendToChannel(channel, "Invalid option");
+                    }
+                }
 
                 else {
                     sendToChannel(channel, "Type help to get a hold of what I am capable of.");
@@ -398,6 +418,10 @@ public class Bot {
 
     public void opUser(String user, String channel){
         sendMessage("MODE " + channel + " +o " + user);
+    }
+
+    public void changeTopic(String topic, String channel){
+        sendMessage("TOPIC " + channel + " :" + topic);
     }
 
 }
