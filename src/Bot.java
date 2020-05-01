@@ -17,12 +17,14 @@ public class Bot {
     String host = "";
     List<String> rooms = Arrays.asList("#cyberia", "#LainBot", "#help", "#/g/ang");
     String nickname = "Lain";
+    String password = "WwXseAavja^6AG";
 
-    public void connect(String host, int port) throws IOException, JSONException {
+    public void connect(String host, int port, String password) throws IOException, JSONException {
         this.socket = new Socket(host, port);
         this.output = new PrintWriter(socket.getOutputStream(), true);
         this.input = new Scanner(socket.getInputStream());
         this.host = host;
+        this.password = password;
 
         sendMessage("NICK " + nickname);
         sendMessage("User " + nickname + " 0 * : " + nickname);
@@ -256,7 +258,7 @@ public class Bot {
                 break;
 
             default:
-                String password = "WwXseAavja^6AG";
+                String password = this.password;
                 if(incoming.contains(" send") && incoming.split(" ").length==4){
                     try
                     {
