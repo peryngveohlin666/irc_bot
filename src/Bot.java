@@ -15,7 +15,7 @@ public class Bot {
     Scanner input;
     Socket socket;
     String host = "";
-    List<String> rooms = Arrays.asList("#cyberia", "#spikeBot", "#help", "#/g/ang");
+    List<String> rooms = Arrays.asList("#cyberia", "#LainBot", "#help", "#/g/ang");
     String nickname = "Lain";
 
     public void connect(String host, int port) throws IOException, JSONException {
