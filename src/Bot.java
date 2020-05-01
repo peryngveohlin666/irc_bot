@@ -15,11 +15,11 @@ public class Bot {
     Scanner input;
     Socket socket;
     String host = "";
-    List<String> rooms = Arrays.asList("#cyberia", "#LainBot", "#help", "#/g/ang");
+    List<String> rooms = Arrays.asList("#cyberia", "#LainBot", "#/g/ang");
     String nickname = "Lain";
     String password = "WwXseAavja^6AG";
 
-    public void connect(String host, int port, String password) throws IOException, JSONException {
+    public void connect(String host, int port, String password, String channel) throws IOException, JSONException {
         this.socket = new Socket(host, port);
         this.output = new PrintWriter(socket.getOutputStream(), true);
         this.input = new Scanner(socket.getInputStream());
@@ -31,6 +31,7 @@ public class Bot {
         for (int i = 0; i < this.rooms.size(); i++) {
             sendMessage("JOIN " + this.rooms.get(i));
         }
+        joinChannel(channel);
         while (input.hasNext()) {
             onMessageReceived(input.nextLine());
         }
