@@ -7,6 +7,7 @@ public class Main {
         String ip = "127.0.0.1";
         String password = "WwXseAavja^6AG";
         int port = 7777;
+        System.out.println("Java Main <ip> <port> <password> will work, it will connect to the localhost and port 7777 if any left blank with the default password WwXseAavja^6AG, if you want the bot to join a channel just private message it <botname> join <channelname>");
         try {
             if (args.length >= 1) {
                 ip = args[0];
