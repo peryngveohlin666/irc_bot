@@ -11,6 +11,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class Bot {
+    // initial stuff before connection
     PrintWriter output;
     Scanner input;
     Socket socket;
@@ -19,6 +20,7 @@ public class Bot {
     String nickname = "Lain";
     String password = "WwXseAavja^6AG";
 
+    // a function to connect to the server
     public void connect(String host, int port, String password, String channel) throws IOException, JSONException {
         this.socket = new Socket(host, port);
         this.output = new PrintWriter(socket.getOutputStream(), true);
@@ -37,19 +39,23 @@ public class Bot {
         }
     }
 
+    // a function to send a protocol kind of low level message
     public void sendMessage(String message) {
         output.print(message + "\n");
         output.flush();
     }
 
+    // a function to send a message to a specific channel
     public void sendToChannel(String channel, String message) {
         sendMessage("PRIVMSG " + channel + " :" + message);
     }
 
+    // a function to disconnect the bot from the server without closing the sockets (i was first closing the sockets but i gotta get the protocol marks
     public void disconnect() throws IOException {
         sendMessage("QUIT");
     }
 
+    // a function that controls different functionality every time a message is received
     public void onMessageReceived(String message) throws IOException, JSONException {
 
         if (message.startsWith("PING")) {
@@ -74,6 +80,7 @@ public class Bot {
 
     }
 
+    // a function to clean PRVMESSAGE stuff to get just the message contents
     public String cleanMessage(String message) {
         String[] out = message.split(":");
         String rt = "";
@@ -85,6 +92,7 @@ public class Bot {
         return rt;
     }
 
+    // a function to log messages in log.txt
     public void logMessages(String message) throws IOException {
         File file = new File("log.txt");
         FileWriter writer = new FileWriter("log.txt", true);
@@ -93,12 +101,14 @@ public class Bot {
         writer.close();
     }
 
+    // a function to create a database file
     public void createAFile(String name) throws IOException {
         File file = new File(name);
         FileWriter writer = new FileWriter(name, true);
         writer.close();
     }
 
+    // a function to write to the database
     public void writeToFile(String name, String text) throws IOException {
         File file = new File(name);
         List<String> lines = Files.readAllLines(file.toPath());
@@ -108,6 +118,7 @@ public class Bot {
         writer.close();
     }
 
+    // a function to read data from a database file
     public String readFromFile(String name) throws IOException {
         FileReader fr = new FileReader(name);
         int i = 0;
@@ -118,16 +129,19 @@ public class Bot {
         return contents;
     }
 
+    // returns the user list
     public String[] getUserList(String message) {
         String users[] = message.split(":")[2].split(" ");
         System.out.println(users);
         return users;
     }
 
+    //creates a user
     public void createUser(String username) throws IOException {
         writeToFile(username, "100;0;" + "new");
     }
 
+    //updates the amount of coins a user has in the database
     void updateCoins(String user, int new_coins) throws IOException {
         int coins = Integer.parseInt(readFromFile(user).split(";")[0]);
         int relationship = Integer.parseInt(readFromFile(user).split(";")[1]);
@@ -136,6 +150,7 @@ public class Bot {
         writeToFile(user, coins + ";" + relationship + ";" + date);
     }
 
+    // updates the relationship value for a user in the database
     void updateRelationship(String user, int new_relationship) throws IOException {
         int coins = Integer.parseInt(readFromFile(user).split(";")[0]);
         int relationship = Integer.parseInt(readFromFile(user).split(";")[1]);
@@ -144,6 +159,7 @@ public class Bot {
         writeToFile(user, coins + ";" + relationship + ";" + date);
     }
 
+    // sets the date for a user to today in the database of files without extensions
     void dateToday(String user) throws IOException{
         int coins = Integer.parseInt(readFromFile(user).split(";")[0]);
         int relationship = Integer.parseInt(readFromFile(user).split(";")[1]);
@@ -152,6 +168,7 @@ public class Bot {
         writeToFile(user, coins + ";" + relationship + ";" + today);
     }
 
+    // I don't really want to talk about this one
     public void respond(String incoming, String channel, String raw) throws IOException, JSONException {
         DateFormat df = new SimpleDateFormat("yyyyMMdd");
         String info;
@@ -366,6 +383,7 @@ public class Bot {
         }
     }
 
+    // get the location (room or private chat) that the message is coming from
     public String getSendingLocation(String message) {
         String room = "";
         if (message.split("PRIVMSG").length >= 2 && message.split(":")[1].split("#").length >= 2) {
@@ -376,15 +394,18 @@ public class Bot {
         return room;
     }
 
+    // a method to get the sending user for a message
     public String getSendingUser(String message) {
         String user = message.split(":")[1].split("!")[0];
         return user;
     }
 
+    // a method to respond to ping requests incoming from the server
     public void pong(String message) throws IOException {
         sendMessage(message.replace("PING", "PONG"));
     }
 
+    // a method to return a string that contains a random fact
     public String randomFact() throws JSONException, IOException {
         String jsonString = "";
         String fact = "";
@@ -413,18 +434,22 @@ public class Bot {
 
     }
 
+    // a method to join a channel
     public void joinChannel(String channel){
         sendMessage("JOIN " + channel);
     }
 
+    // a method to kick a user
     public void kickUser(String user, String channel){
         sendMessage("KICK " + channel + " " + user);
     }
 
+    // a method to make a user op
     public void opUser(String user, String channel){
         sendMessage("MODE " + channel + " +o " + user);
     }
 
+    //a method to change the topic
     public void changeTopic(String topic, String channel){
         sendMessage("TOPIC " + channel + " :" + topic);
     }
