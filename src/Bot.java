@@ -138,6 +138,7 @@ public class Bot {
 
     //creates a user
     public void createUser(String username) throws IOException {
+        createAFile(username);
         writeToFile(username, "100;0;" + "new");
     }
 
@@ -170,216 +171,215 @@ public class Bot {
 
     // I don't really want to talk about this one
     public void respond(String incoming, String channel, String raw) throws IOException, JSONException {
-        DateFormat df = new SimpleDateFormat("yyyyMMdd");
-        String info;
-        String today;
-        String date;
-        int coins, relationship;
-        switch (incoming) {
-            case " help":
-                sendToChannel(channel, "After typing my name; Type in stallman to get the lyrics for the free software song, Type in roll to get a random number between 0 and 100, beer to buy a pint! (this will cost you 10 coins), type daily to collect you daily coins, type coins to check the amount of coins you have, type kiss to try getting a kiss,");
-                sendToChannel(channel, "type send + <Username> to sent the user coins, randomfact to get a random fact, join + #channelname to invite me to your channel (I log messages so please consider that before inviting me to your channel), dc <password> to make me disconnect, kick <user> <#channel> <password> to kick a user (only works if I am the channel operator)");
-                sendToChannel(channel, "op <username> <#channel> <password> to make someone an operator in that channel (only works if I am an operator and obviously if you know the password) -I am implementing these to control my own channel since there are no NickServers and when i leave i lose my op status-");
-                break;
-            case " mert":
-                sendToChannel(channel, "cutie");
-                break;
-            case " stallman":
-                sendToChannel(channel, "Join us now and share the software " +
-                        "You'll be free, hackers, you'll be free. " +
-                        "Join us now and share the software; " +
-                        "You'll be free, hackers, you'll be free. " +
-                        "Hoarders can get piles of money, " +
-                        "That is true, hackers, that is true. " +
-                        "But they cannot help their neighbors; " +
-                        "That's not good, hackers, that's not good. ");
-                sendToChannel(channel, "When we have enough free software " +
-                        "At our call, hackers, at our call, " +
-                        "We'll kick out those dirty licenses " +
-                        "Ever more, hackers, ever more. " +
-                        "Join us now and share the software; " +
-                        "You'll be free, hackers, you'll be free. " +
-                        "Join us now and share the software; " +
-                        "You'll be free, hackers, you'll be free.");
-                break;
-            case " roll":
-                Random rand = new Random();
-                int roll = rand.nextInt(101);
-                sendToChannel(channel,getSendingUser(raw) + " rolled " + Integer.toString(roll) + ".");
-                break;
-            case " beer":
-                info = readFromFile(getSendingUser(raw));
-                if(info.equals("")){
-                    createUser(getSendingUser(raw));
-                }
-                coins = Integer.parseInt(readFromFile(getSendingUser(raw)).split(";")[0]);
-                relationship = Integer.parseInt(readFromFile(getSendingUser(raw)).split(";")[1]);
-                if (coins >= 10) {
-                    sendToChannel(channel, getSendingUser(raw) + " Baught a pint! It cost you 10 coins! Your relationship with the bartender improved!");
-                    coins = coins - 10;
-                    relationship = relationship + 10;
-                    updateCoins(getSendingUser(raw), coins);
-                    updateRelationship(getSendingUser(raw), relationship);
-                }
-                else{
-                    sendToChannel(channel, getSendingUser(raw) + " Is broke");
-                }
-                break;
-            case " coins":
-                info = readFromFile(getSendingUser(raw));
-                if(info.equals("")){
-                    createUser(getSendingUser(raw));
-                }
-                sendToChannel(channel, "You have: " + readFromFile(getSendingUser(raw)).split(";")[0] + " coins.");
-                break;
-            case " daily":
-                info = readFromFile(getSendingUser(raw));
-                today = df.format(Calendar.getInstance().getTime()).split(" ")[0];
-                if(info.equals("")){
-                    createUser(getSendingUser(raw));
-                }
-                coins = Integer.parseInt(readFromFile(getSendingUser(raw)).split(";")[0]);
-                relationship = Integer.parseInt(readFromFile(getSendingUser(raw)).split(";")[1]);
-                date = (readFromFile(getSendingUser(raw)).split(";")[2].split("\n")[0]);
-               if (!date.equals(today)){
-                sendToChannel(channel, getSendingUser(raw) + " Collected their daily coins of 100!");
-                coins = coins + 100;
-                relationship = relationship + 5;
-                updateCoins(getSendingUser(raw), coins);
-                updateRelationship(getSendingUser(raw), relationship);
-                dateToday(getSendingUser(raw));
-                }
-                else{
-                    sendToChannel(channel, getSendingUser(raw) + " You can't collect any more coins today");
-                }
-                break;
-            case " kiss":
-                info = readFromFile(getSendingUser(raw));
-                if(info.equals("")){
-                    createUser(getSendingUser(raw));
-                }
-                relationship = Integer.parseInt(readFromFile(getSendingUser(raw)).split(";")[1]);
-                if(relationship > 50) {
-                    sendToChannel(channel,getSendingUser(raw) + " Got a kiss from this pretty lady!");
-                }
-                else{
-                    sendToChannel(channel, getSendingUser(raw) + " Got slapped by this pretty lady trying to kiss her!");
-                    updateRelationship(getSendingUser(raw), relationship - 10);
-                }
-                break;
-            case " randomfact":
-                String fact = randomFact();
-                sendToChannel(channel, fact);
-                break;
-
-            default:
-                String password = this.password;
-                if(incoming.contains(" send") && incoming.split(" ").length==4){
-                    try
-                    {
-                        info = readFromFile(getSendingUser(raw));
-                        String name = incoming.split(" ")[2].toLowerCase();
-                        int length = incoming.split(" ").length;
-                        File receiver = new File(name);
-                        String price = incoming.split(" ")[3];
-                        if(receiver.exists()){
-                            int coins_sender = Integer.parseInt(readFromFile(getSendingUser(raw)).split(";")[0]);
-                            int relationship_sender = Integer.parseInt(readFromFile(getSendingUser(raw)).split(";")[1]);
-                            String date_sender = (readFromFile(getSendingUser(raw)).split(";")[2].split("\n")[0]);
-                            if(info.equals("")){
-                                createUser(getSendingUser(raw));
-                            }
-                            int coins_receiver = Integer.parseInt(readFromFile(name).split(";")[0]);
-                            int relationship_receiver = Integer.parseInt(readFromFile(name).split(";")[1]);
-                            String date_receiver = (readFromFile(name).split(";")[2].split("\n")[0]);
-                            if (coins_sender >= Integer.parseInt(price) && Integer.parseInt(price) > 0 && !getSendingUser(raw).equals(name)) {
-                                updateCoins(getSendingUser(raw), coins_sender - Integer.parseInt(price));
-                                updateCoins(name, coins_receiver + Integer.parseInt(price));
-                                sendToChannel(channel, getSendingUser(raw) + " sent " + receiver + " " + price + " coins. Don't use it for buying stuff like accela... Heard it is bad for you OwO");
-                            } else if (Integer.parseInt(price) <= 0 || getSendingUser(raw).equals(name)) {
-                                sendToChannel(channel, getSendingUser(raw) + " is sneaky.");
-
-                            } else {
-                                sendToChannel(channel, getSendingUser(raw) + " is broke!");
-                            }
-                        }
-                        else{
-                            sendToChannel(channel, getSendingUser(raw) + " Sorry , can not find your friend in my database.... Umm would you be kind enough to ask them to register (by writing daily) or double check their nickanme?");
-                        }
+        try {
+            DateFormat df = new SimpleDateFormat("yyyyMMdd");
+            String info;
+            String today;
+            String date;
+            int coins, relationship;
+            switch (incoming) {
+                case " help":
+                    sendToChannel(channel, "After typing my name; Type in stallman to get the lyrics for the free software song, Type in roll to get a random number between 0 and 100, beer to buy a pint! (this will cost you 10 coins), type daily to collect you daily coins, type coins to check the amount of coins you have, type kiss to try getting a kiss,");
+                    sendToChannel(channel, "type send + <Username> to sent the user coins, randomfact to get a random fact, join + #channelname to invite me to your channel (I log messages so please consider that before inviting me to your channel), dc <password> to make me disconnect, kick <user> <#channel> <password> to kick a user (only works if I am the channel operator)");
+                    sendToChannel(channel, "op <username> <#channel> <password> to make someone an operator in that channel (only works if I am an operator and obviously if you know the password) -I am implementing these to control my own channel since there are no NickServers and when i leave i lose my op status-");
+                    break;
+                case " mert":
+                    sendToChannel(channel, "cutie");
+                    break;
+                case " stallman":
+                    sendToChannel(channel, "Join us now and share the software " +
+                            "You'll be free, hackers, you'll be free. " +
+                            "Join us now and share the software; " +
+                            "You'll be free, hackers, you'll be free. " +
+                            "Hoarders can get piles of money, " +
+                            "That is true, hackers, that is true. " +
+                            "But they cannot help their neighbors; " +
+                            "That's not good, hackers, that's not good. ");
+                    sendToChannel(channel, "When we have enough free software " +
+                            "At our call, hackers, at our call, " +
+                            "We'll kick out those dirty licenses " +
+                            "Ever more, hackers, ever more. " +
+                            "Join us now and share the software; " +
+                            "You'll be free, hackers, you'll be free. " +
+                            "Join us now and share the software; " +
+                            "You'll be free, hackers, you'll be free.");
+                    break;
+                case " roll":
+                    Random rand = new Random();
+                    int roll = rand.nextInt(101);
+                    sendToChannel(channel, getSendingUser(raw) + " rolled " + Integer.toString(roll) + ".");
+                    break;
+                case " beer":
+                    createAFile(getSendingUser(raw));
+                    info = readFromFile(getSendingUser(raw));
+                    if (info.length() < 1) {
+                        System.out.println("empty");
+                        createUser(getSendingUser(raw));
                     }
-                    catch (Exception e)
-                    {
-                        sendToChannel(channel, "This breaks my heart (you can't do this)");
+                    coins = Integer.parseInt(readFromFile(getSendingUser(raw)).split(";")[0]);
+                    relationship = Integer.parseInt(readFromFile(getSendingUser(raw)).split(";")[1]);
+                    if (coins >= 10) {
+                        sendToChannel(channel, getSendingUser(raw) + " Baught a pint! It cost you 10 coins! Your relationship with the bartender improved!");
+                        coins = coins - 10;
+                        relationship = relationship + 10;
+                        updateCoins(getSendingUser(raw), coins);
+                        updateRelationship(getSendingUser(raw), relationship);
+                    } else {
+                        sendToChannel(channel, getSendingUser(raw) + " Is broke");
                     }
-                }
-                else if(incoming.contains(" join #") && incoming.split(" ").length==3){
+                    break;
+                case " coins":
+                    createAFile(getSendingUser(raw));
+                    info = readFromFile(getSendingUser(raw));
+                    if (info.equals("")) {
+                        createUser(getSendingUser(raw));
+                    }
+                    sendToChannel(channel, "You have: " + readFromFile(getSendingUser(raw)).split(";")[0] + " coins.");
+                    break;
+                case " daily":
+                    createAFile(getSendingUser(raw));
+                    info = readFromFile(getSendingUser(raw));
+                    today = df.format(Calendar.getInstance().getTime()).split(" ")[0];
+                    if (info.equals("")) {
+                        createUser(getSendingUser(raw));
+                    }
                     try {
-                        String channel_name = incoming.split(" ")[2].toLowerCase();
-                        joinChannel(channel_name);
-                        sendToChannel(channel, "Joining " + channel_name);
+                        coins = Integer.parseInt(readFromFile(getSendingUser(raw)).split(";")[0]);
+                        relationship = Integer.parseInt(readFromFile(getSendingUser(raw)).split(";")[1]);
+                        date = (readFromFile(getSendingUser(raw)).split(";")[2].split("\n")[0]);
+                        if (!date.equals(today)) {
+                            sendToChannel(channel, getSendingUser(raw) + " Collected their daily coins of 100!");
+                            coins = coins + 100;
+                            relationship = relationship + 5;
+                            updateCoins(getSendingUser(raw), coins);
+                            updateRelationship(getSendingUser(raw), relationship);
+                            dateToday(getSendingUser(raw));
+                        } else {
+                            sendToChannel(channel, getSendingUser(raw) + " You can't collect any more coins today");
+                        }
                     }
                     catch (Exception e){
-                        sendToChannel(channel, "Invalid option");
+                        createUser(getSendingUser(raw));
                     }
+                    break;
+                case " kiss":
+                    createAFile(getSendingUser(raw));
+                    info = readFromFile(getSendingUser(raw));
+                    if (info.equals("")) {
+                        createUser(getSendingUser(raw));
+                    }
+                    relationship = Integer.parseInt(readFromFile(getSendingUser(raw)).split(";")[1]);
+                    if (relationship > 50) {
+                        sendToChannel(channel, getSendingUser(raw) + " Got a kiss from this pretty lady!");
+                    } else {
+                        sendToChannel(channel, getSendingUser(raw) + " Got slapped by this pretty lady trying to kiss her!");
+                        updateRelationship(getSendingUser(raw), relationship - 10);
+                    }
+                    break;
+                case " randomfact":
+                    String fact = randomFact();
+                    sendToChannel(channel, fact);
+                    break;
 
-                }
-                else if(incoming.contains(" kick") && incoming.split(" ").length==5) {
-                    try {
-                        String user_name = incoming.split(" ")[2].toLowerCase();
-                        String channel_name = incoming.split(" ")[3].toLowerCase();
-                        if(incoming.split(" ")[4].equals(password)) {
-                            kickUser(user_name, channel_name);
+                default:
+                    String password = this.password;
+                    if (incoming.contains(" send") && incoming.split(" ").length == 4) {
+                        try {
+                            createAFile(getSendingUser(raw));
+                            info = readFromFile(getSendingUser(raw));
+                            String name = incoming.split(" ")[2].toLowerCase();
+                            int length = incoming.split(" ").length;
+                            File receiver = new File(name);
+                            String price = incoming.split(" ")[3];
+                            if (receiver.exists()) {
+                                int coins_sender = Integer.parseInt(readFromFile(getSendingUser(raw)).split(";")[0]);
+                                int relationship_sender = Integer.parseInt(readFromFile(getSendingUser(raw)).split(";")[1]);
+                                String date_sender = (readFromFile(getSendingUser(raw)).split(";")[2].split("\n")[0]);
+                                if (info.equals("")) {
+                                    createUser(getSendingUser(raw));
+                                }
+                                int coins_receiver = Integer.parseInt(readFromFile(name).split(";")[0]);
+                                int relationship_receiver = Integer.parseInt(readFromFile(name).split(";")[1]);
+                                String date_receiver = (readFromFile(name).split(";")[2].split("\n")[0]);
+                                if (coins_sender >= Integer.parseInt(price) && Integer.parseInt(price) > 0 && !getSendingUser(raw).equals(name)) {
+                                    updateCoins(getSendingUser(raw), coins_sender - Integer.parseInt(price));
+                                    updateCoins(name, coins_receiver + Integer.parseInt(price));
+                                    sendToChannel(channel, getSendingUser(raw) + " sent " + receiver + " " + price + " coins. Don't use it for buying stuff like accela... Heard it is bad for you OwO");
+                                } else if (Integer.parseInt(price) <= 0 || getSendingUser(raw).equals(name)) {
+                                    sendToChannel(channel, getSendingUser(raw) + " is sneaky.");
+
+                                } else {
+                                    sendToChannel(channel, getSendingUser(raw) + " is broke!");
+                                }
+                            } else {
+                                sendToChannel(channel, getSendingUser(raw) + " Sorry , can not find your friend in my database.... Umm would you be kind enough to ask them to register (by writing daily) or double check their nickanme?");
+                            }
+                        } catch (Exception e) {
+                            sendToChannel(channel, "This breaks my heart (you can't do this)");
                         }
-                        else {
-                            sendToChannel(channel, "Invalid password.");
+                    } else if (incoming.contains(" join #") && incoming.split(" ").length == 3) {
+                        try {
+                            String channel_name = incoming.split(" ")[2].toLowerCase();
+                            joinChannel(channel_name);
+                            sendToChannel(channel, "Joining " + channel_name);
+                        } catch (Exception e) {
+                            sendToChannel(channel, "Invalid option");
                         }
-                    } catch (Exception e) {
-                        sendToChannel(channel, "Invalid option");
-                    }
-                }
-                else if(incoming.contains(" op") && incoming.split(" ").length==5) {
-                    try {
-                        String user_name = incoming.split(" ")[2].toLowerCase();
-                        String channel_name = incoming.split(" ")[3].toLowerCase();
-                        if(incoming.split(" ")[4].equals(password)) {
-                            opUser(user_name, channel_name);
+
+                    } else if (incoming.contains(" kick") && incoming.split(" ").length == 5) {
+                        try {
+                            String user_name = incoming.split(" ")[2].toLowerCase();
+                            String channel_name = incoming.split(" ")[3].toLowerCase();
+                            if (incoming.split(" ")[4].equals(password)) {
+                                kickUser(user_name, channel_name);
+                            } else {
+                                sendToChannel(channel, "Invalid password.");
+                            }
+                        } catch (Exception e) {
+                            sendToChannel(channel, "Invalid option");
                         }
-                        else {
-                            sendToChannel(channel, "Invalid password.");
+                    } else if (incoming.contains(" op") && incoming.split(" ").length == 5) {
+                        try {
+                            String user_name = incoming.split(" ")[2].toLowerCase();
+                            String channel_name = incoming.split(" ")[3].toLowerCase();
+                            if (incoming.split(" ")[4].equals(password)) {
+                                opUser(user_name, channel_name);
+                            } else {
+                                sendToChannel(channel, "Invalid password.");
+                            }
+                        } catch (Exception e) {
+                            sendToChannel(channel, "Invalid option");
                         }
-                    } catch (Exception e) {
-                        sendToChannel(channel, "Invalid option");
-                    }
-                }
-                else if(incoming.contains(" topic") && incoming.split(" ").length>=5) {
-                    try {
-                        String channel_name = incoming.split(" ")[2];
-                        String topic_string = "";
-                        String[] topic_listed = incoming.split(" ");
+                    } else if (incoming.contains(" topic") && incoming.split(" ").length >= 5) {
+                        try {
+                            String channel_name = incoming.split(" ")[2];
+                            String topic_string = "";
+                            String[] topic_listed = incoming.split(" ");
+                            int len = incoming.split(" ").length;
+                            for (int i = 3; i < len - 1; i++) {
+                                topic_string = topic_string + " " + topic_listed[i];
+                            }
+
+                            if (incoming.split(" ")[len - 1].equals(password)) {
+                                changeTopic(topic_string, channel_name);
+                            } else {
+                                sendToChannel(channel, "Invalid password.");
+                            }
+                        } catch (Exception e) {
+                            sendToChannel(channel, "Invalid option");
+                        }
+                    } else if (incoming.contains(" dc") && incoming.split(" ").length >= 3) {
                         int len = incoming.split(" ").length;
-                        for(int i = 3; i < len -1; i++){
-                            topic_string = topic_string + " " + topic_listed[i];
+                        if (incoming.split(" ")[len - 1].equals(password)) {
+                            disconnect();
                         }
-
-                        if(incoming.split(" ")[len-1].equals(password)) {
-                            changeTopic(topic_string, channel_name);
-                        }
-                        else {
-                            sendToChannel(channel, "Invalid password.");
-                        }
-                    } catch (Exception e) {
-                        sendToChannel(channel, "Invalid option");
+                    } else {
+                        sendToChannel(channel, "Type help to get a hold of what I am capable of.");
                     }
-                }
-                else if (incoming.contains(" dc") && incoming.split(" ").length>=3){
-                    int len = incoming.split(" ").length;
-                    if(incoming.split(" ")[len-1].equals(password)) {
-                        disconnect();
-                    }
-                }
-                else {
-                    sendToChannel(channel, "Type help to get a hold of what I am capable of.");
-                }
+            }
+        }
+        catch (Exception e) {
+            System.out.println(e);
         }
     }
 
